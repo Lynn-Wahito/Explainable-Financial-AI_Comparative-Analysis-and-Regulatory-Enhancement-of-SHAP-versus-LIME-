@@ -21,3 +21,7 @@ def create_access_token(subject: str, data: dict = None, expires_in: int = ACCES
         payload.update(data)
     payload.update({"exp": int(time.time()) + int(expires_in)})
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+def generate_reset_token():
+    import secrets
+    return secrets.token_urlsafe(24)
