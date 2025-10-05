@@ -1,5 +1,7 @@
 # backend/src/auth/routes.py
 import time
+from datetime import datetime, timedelta
+from ..auth.utils import generate_verification_token, verify_token
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
@@ -10,6 +12,7 @@ from .utils import (
     verify_password,
     create_access_token,
     generate_reset_token,
+    generate_verification_token,
 )
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -37,6 +40,12 @@ class RequestResetIn(BaseModel):
 class ResetPasswordIn(BaseModel):
     token: str
     new_password: str
+
+class RequestVerifyIn(BaseModel):
+    email: EmailStr
+
+class VerifyEmailIn(BaseModel):
+    token: str
 
 # ---------- Endpoints ----------
 @router.post("/register")
@@ -87,3 +96,28 @@ def reset_password(payload: ResetPasswordIn, db: Session = Depends(get_db)):
     db.add(user)
     db.commit()
     return {"msg": "Password reset successful"}
+
+@router.post("/request-verification")
+def request_verification(payload: RequestVerifyIn, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == payload.email).first()
+    if not user:
+        return {"msg": "If that email exists, a verification link was sent."}
+    token = generate_verification_token()
+    user.verification_token = token
+    user.verification_expires = datetime.utcnow() + timedelta(minutes=30)
+    db.add(user)
+    db.commit()
+    print(f"[SIMULATED EMAIL] Verify link: http://localhost:5173/verify-email?token={token}")
+    return {"msg": "If that email exists, a verification link was sent."}
+
+@router.post("/verify-email")
+def verify_email(payload: VerifyEmailIn, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.verification_token == payload.token).first()
+    if not user or datetime.utcnow() > (user.verification_expires or datetime.utcnow()):
+        raise HTTPException(status_code=400, detail="Invalid or expired token")
+    user.is_verified = True
+    user.verification_token = None
+    user.verification_expires = None
+    db.add(user)
+    db.commit()
+    return {"msg": "Email verified successfully", "email": user.email, "is_verified": user.is_verified}
