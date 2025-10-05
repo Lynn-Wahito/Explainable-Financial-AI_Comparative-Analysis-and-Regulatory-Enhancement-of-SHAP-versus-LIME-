@@ -2,6 +2,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .db import engine, Base
+from .auth import rbac_routes as rbac_routes
 
 # import models so all tables register
 from .auth import models as auth_models
@@ -21,7 +22,13 @@ app.add_middleware(
 
 # Register routers
 app.include_router(auth_routes.router)
+app.include_router(rbac_routes.router)
 
-# Create all tables
+# Create DB tables at startup
 Base.metadata.create_all(bind=engine)
-print("✅ Database created successfully at:", engine.url)
+
+if __name__ == "__main__":
+    Base.metadata.create_all(bind=engine)
+    import os
+    from .db import DB_PATH
+    print(f"✅ Database created successfully at: {DB_PATH}")
