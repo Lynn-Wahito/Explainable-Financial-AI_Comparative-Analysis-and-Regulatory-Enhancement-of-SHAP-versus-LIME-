@@ -1,5 +1,7 @@
-from sqlalchemy import Column, Integer, String, Boolean, Float
+# backend/src/auth/models.py
+from sqlalchemy import Column, Integer, String, Boolean, DateTime
 from ..db import Base
+from datetime import datetime
 
 class User(Base):
     __tablename__ = "users"
@@ -10,8 +12,15 @@ class User(Base):
     role = Column(String, default="user")
     is_active = Column(Boolean, default=True)
 
-    # OTP + Reset fields for Issue #3
+    # OTP (for login 2-step)
     otp_code = Column(String, nullable=True)
-    otp_expires = Column(Float, nullable=True)
+    otp_expires = Column(DateTime, nullable=True)
+
+    # Password reset
     reset_token = Column(String, nullable=True)
-    reset_token_expires = Column(Float, nullable=True)
+    reset_token_expires = Column(DateTime, nullable=True)
+
+    # Email verification
+    verification_token = Column(String, nullable=True)
+    verification_expires = Column(DateTime, nullable=True)
+    is_verified = Column(Boolean, default=False)

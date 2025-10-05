@@ -6,8 +6,12 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 from ..db import Base, engine
 
+
+# Core Domain Models Only
+
 class Customer(Base):
     __tablename__ = "customer"
+
     customer_id = Column(Integer, primary_key=True, index=True)
     sex = Column(String, nullable=False)          # 1=male, 2=female
     education = Column(String, nullable=True)     # 1=grad, 2=univ, 3=hs, 4=other
@@ -19,6 +23,7 @@ class Customer(Base):
 
 class CreditAccount(Base):
     __tablename__ = "credit_account"
+
     account_id = Column(Integer, primary_key=True, index=True)
     customer_id = Column(Integer, ForeignKey("customer.customer_id"))
     limit_bal = Column(Numeric, nullable=False)
@@ -32,16 +37,18 @@ class CreditAccount(Base):
 
 class PaymentStatus(Base):
     __tablename__ = "payment_status"
+
     pay_id = Column(Integer, primary_key=True, index=True)
     account_id = Column(Integer, ForeignKey("credit_account.account_id"))
-    month = Column(Integer, nullable=False)       # 1..6
-    status = Column(Integer, nullable=False)      # -1=pay duly, 0=revolving, 1..9=delay months
+    month = Column(Integer, nullable=False)
+    status = Column(Integer, nullable=False)
 
     account = relationship("CreditAccount", back_populates="payment_statuses")
 
 
 class BillAmount(Base):
     __tablename__ = "bill_amount"
+
     bill_id = Column(Integer, primary_key=True, index=True)
     account_id = Column(Integer, ForeignKey("credit_account.account_id"))
     month = Column(Integer, nullable=False)
@@ -52,6 +59,7 @@ class BillAmount(Base):
 
 class PaymentAmount(Base):
     __tablename__ = "payment_amount"
+
     payamt_id = Column(Integer, primary_key=True, index=True)
     account_id = Column(Integer, ForeignKey("credit_account.account_id"))
     month = Column(Integer, nullable=False)
@@ -62,6 +70,7 @@ class PaymentAmount(Base):
 
 class ModelResults(Base):
     __tablename__ = "model_results"
+
     result_id = Column(Integer, primary_key=True, index=True)
     account_id = Column(Integer, ForeignKey("credit_account.account_id"))
     model_name = Column(String, nullable=False)
@@ -75,6 +84,7 @@ class ModelResults(Base):
 
 class ExplanationResults(Base):
     __tablename__ = "explanation_results"
+
     explanation_id = Column(Integer, primary_key=True, index=True)
     result_id = Column(Integer, ForeignKey("model_results.result_id"))
     method = Column(String, nullable=False)  # SHAP / LIME
@@ -84,7 +94,9 @@ class ExplanationResults(Base):
     model_result = relationship("ModelResults", back_populates="explanations")
 
 
-# Create tables if run directly
+# Create Tables if Run Directly
+
 if __name__ == "__main__":
     Base.metadata.create_all(bind=engine)
-    print("✅ Core DB schema created at", os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "IS_PROJECT_II_backend.db")))
+    print("✅ Core DB schema created at",
+          os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "IS_PROJECT_II_backend.db")))
