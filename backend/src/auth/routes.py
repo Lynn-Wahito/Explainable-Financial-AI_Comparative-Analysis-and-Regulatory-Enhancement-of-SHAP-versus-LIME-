@@ -1,5 +1,6 @@
 # backend/src/auth/routes.py
 import time
+import random
 from datetime import datetime, timedelta
 from ..auth.utils import generate_verification_token, verify_token
 from fastapi import APIRouter, Depends, HTTPException

@@ -6,6 +6,8 @@ import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import RequestReset from "./pages/auth/RequestReset";
 import ResetPassword from "./pages/auth/ResetPassword";
+import Dashboard from "./pages/Dashboard";
+
 import "./index.css";
 
 function Home() {
@@ -25,7 +27,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Dashboard />} />
         <Route path="/app" element={<App />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
