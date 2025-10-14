@@ -63,24 +63,6 @@ export default function Signup() {
             </div>
           </div>
 
-          <div className="form-group">
-            <div className="input-wrapper">
-              <select
-                id="role"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                required
-              >
-                <option value="customer">Customer</option>
-                <option value="analyst">Loan Officer / Analyst</option>
-                <option value="regulator">Regulator / Compliance Officer</option>
-                <option value="admin">Data Scientist / Admin</option>
-              </select>
-              <label htmlFor="role">Select Role</label>
-              <span className="focus-border"></span>
-            </div>
-          </div>
-
           <button type="submit" className="login-btn btn">
             <span className="btn-text">Sign Up</span>
             <span className="btn-loader"></span>
