@@ -1,13 +1,14 @@
 # backend/src/auth/routes.py
 import time
 import random
+from typing import Literal
 from datetime import datetime, timedelta
 from ..auth.utils import generate_verification_token, verify_token
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 from ..db import SessionLocal
-from .models import User
+from .models import User, RoleEnum
 from .utils import (
     hash_password,
     verify_password,
@@ -29,7 +30,6 @@ def get_db():
 class RegisterIn(BaseModel):
     email: EmailStr
     password: str
-    role: str = "user"
 
 class LoginIn(BaseModel):
     email: EmailStr
@@ -48,6 +48,10 @@ class RequestVerifyIn(BaseModel):
 class VerifyEmailIn(BaseModel):
     token: str
 
+class AssignRoleIn(BaseModel):
+    user_id: int
+    role: RoleEnum 
+
 # ---------- Endpoints ----------
 @router.post("/register")
 def register(payload: RegisterIn, db: Session = Depends(get_db)):
@@ -56,7 +60,7 @@ def register(payload: RegisterIn, db: Session = Depends(get_db)):
     user = User(
         email=payload.email,
         hashed_password=hash_password(payload.password),
-        role=payload.role,
+        role=RoleEnum.CUSTOMER,
     )
     db.add(user)
     db.commit()
@@ -122,3 +126,16 @@ def verify_email(payload: VerifyEmailIn, db: Session = Depends(get_db)):
     db.add(user)
     db.commit()
     return {"msg": "Email verified successfully", "email": user.email, "is_verified": user.is_verified}
+
+@router.post("/admin/assign-role")
+def assign_role(payload: AssignRoleIn, db: Session = Depends(get_db)):
+    # TODO: In next RBAC issue, protect this route with require_roles([RoleEnum.ADMIN])
+    user = db.get(User, payload.user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user.role = payload.role
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return {"msg": "role-assigned", "user_id": user.id, "role": user.role}

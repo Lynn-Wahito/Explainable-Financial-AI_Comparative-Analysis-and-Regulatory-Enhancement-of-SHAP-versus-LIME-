@@ -1,15 +1,25 @@
 # backend/src/auth/models.py
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from enum import Enum
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum as SAEnum
+from sqlalchemy.orm import declarative_base
 from ..db import Base
 from datetime import datetime
+
+class RoleEnum(str, Enum):
+    CUSTOMER = "customer"
+    ANALYST = "analyst"
+    REGULATOR = "regulator"
+    ADMIN = "admin"
 
 class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True, nullable=False)
+    email = Column(String, unique=True, nullable=False)
     hashed_password = Column(String, nullable=False)
-    role = Column(String, default="user")
+    
+    role = Column(SAEnum(RoleEnum, name="role_enum"), nullable=False, default=RoleEnum.CUSTOMER)
+
     is_active = Column(Boolean, default=True)
 
     # OTP (for login 2-step)
