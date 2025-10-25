@@ -1,11 +1,9 @@
 # backend/src/core/models.py
-import os
 from sqlalchemy import (
     Column, Integer, String, Float, Numeric, ForeignKey, TIMESTAMP, Text
 )
 from sqlalchemy.orm import relationship
-from ..db import Base, engine
-
+from ..db import Base
 
 # Core Domain Models Only
 
@@ -92,11 +90,3 @@ class ExplanationResults(Base):
     summary = Column(Text, nullable=True)
 
     model_result = relationship("ModelResults", back_populates="explanations")
-
-
-# Create Tables if Run Directly
-
-if __name__ == "__main__":
-    Base.metadata.create_all(bind=engine)
-    print("✅ Core DB schema created at",
-          os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "IS_PROJECT_II_backend.db")))
