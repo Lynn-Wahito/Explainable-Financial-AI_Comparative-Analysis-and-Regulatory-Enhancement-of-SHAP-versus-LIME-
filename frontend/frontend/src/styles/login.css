@@ -88,9 +88,6 @@
   background: rgba(102,126,234,0.06);
 }
 
-/* ===== Form ===== */
-.auth-form {}
-
 /* Group + floating labels */
 .form-group {
   margin-bottom: 20px;
