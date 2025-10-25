@@ -1,111 +1,148 @@
+// src/pages/auth/Login.jsx
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import "../../styles/login.css";
+import { Link, useNavigate } from "react-router-dom";
+import "../../styles/auth.css";
 
 export default function Login() {
+  const nav = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const nav = useNavigate();
-  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Decode JWT payload safely
+  const decodeJwt = (token) => {
+    try {
+      const base64 = token.split(".")[1];
+      const json = atob(base64.replace(/-/g, "+").replace(/_/g, "/"));
+      return JSON.parse(json);
+    } catch (e) {
+      console.error("Failed to decode token", e);
+      return null;
+    }
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    const res = await fetch("http://127.0.0.1:8000/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-    const data = await res.json();
-    if (res.ok && data.access_token) {
-      localStorage.setItem("access_token", data.access_token);
-      nav("/dashboard");
-    } else {
-      alert(data.detail || "Login failed");
+    setLoading(true);
+    try {
+      const res = await fetch("http://127.0.0.1:8000/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+
+      if (res.ok && data.access_token) {
+        const token = data.access_token;
+        localStorage.setItem("access_token", token);
+
+        // Read role/email from token (your backend sets data.role)
+        const payload = decodeJwt(token);
+        const role =
+          payload?.role || payload?.data?.role || payload?.claims?.role || null;
+        const userEmail = payload?.email || payload?.data?.email || email;
+
+        if (role) localStorage.setItem("role", role);
+        if (userEmail) localStorage.setItem("email", userEmail);
+
+        // Role → Route map
+        const routeByRole = {
+          customer: "/customer",
+          analyst: "/analyst",
+          regulator: "/regulator",
+          admin: "/admin",
+        };
+
+        // Redirect based on role (fallback to /dashboard)
+        nav(routeByRole[role] || "/dashboard");
+      } else {
+        alert(data.detail || "Login failed");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Network error. Is the API running?");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="login-container">
-      <div className="login-card">
-        <div className="login-header">
-          <h2>Welcome</h2>
-          <p>Sign in to your account</p>
+    <div className="auth-overlay">
+      <div className="auth-container">
+        <div className="auth-logo">CreditAI</div>
+        <p className="auth-subtitle">Explainable Loan Risk Assessment System</p>
+
+        <div className="auth-tabs">
+          <button className="auth-tab active">Sign In</button>
+          <button className="auth-tab" onClick={() => nav("/signup")}>
+            Sign Up
+          </button>
         </div>
 
-        <form onSubmit={handleLogin}>
+        <form className="auth-form" onSubmit={handleLogin} noValidate>
           <div className="form-group">
-            <div className="input-wrapper">
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={email}
-                required
-                placeholder=" "
-                onChange={(e) => setEmail(e.target.value)}
-              />
-              <label htmlFor="email">Email Address</label>
-              <span className="focus-border"></span>
-            </div>
+            <label className="form-label" htmlFor="email">Email Address</label>
+            <input
+              id="email"
+              className="form-input"
+              type="email"
+              placeholder="john.doe@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              required
+            />
           </div>
 
           <div className="form-group">
-            <div className="input-wrapper password-wrapper">
-              <input
-                type={showPassword ? "text" : "password"}
-                id="password"
-                name="password"
-                required
-                placeholder=" "
-                value={password}
-                autoComplete="current-password"
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <label htmlFor="password">Password</label>
-
-              {/* Toggle Eye Button */}
-              <button
-                type="button"
-                className="password-toggle"
-                onClick={() => setShowPassword(!showPassword)}
-                aria-label="Toggle Password Visibility" 
-                >
-                    <span className={`eye-icon ${showPassword ? "show-password" : ""}`}></span>
-                </button>
-              <span className="focus-border"></span>
-            </div>
+            <label className="form-label" htmlFor="password">Password</label>
+            <input
+              id="password"
+              className="form-input"
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+              required
+            />
           </div>
 
-          <div className="form-options">
-            <label className="remember-wrapper">
-              <input type="checkbox" />
-              <span className="checkbox-label">
-                <span className="checkmark"></span> Remember me
-              </span>
+          <div className="auth-actions">
+            <label className="auth-remember">
+              <input type="checkbox" /> Remember me
             </label>
-
-            <Link to="/request-reset" className="forgot-password">
+            <Link className="auth-forgot" to="/request-reset">
               Forgot password?
             </Link>
-
           </div>
 
-          <button type="submit" className="btn login-btn">
-            <span className="btn-text">Sign In</span>
-            <span className="btn-loader"></span>
+          <button type="submit" className="btn btn-primary" disabled={loading}>
+            {loading ? "Signing in…" : "Sign In"}
           </button>
         </form>
 
-        <div className="divider"><span>or continue with</span></div>
+        <div className="divider"><span>or</span></div>
 
-        <div className="social-login">
-          <button type="button" className="social-btn">
-            <span className="social-icon google-icon"></span> Google
-          </button>
-        </div>
+        {/* Google ONLY on Login */}
+        <button
+          type="button"
+          className="btn btn-google"
+          onClick={() =>
+            (window.location.href = "http://127.0.0.1:8000/auth/google")
+          }
+        >
+          <img
+            alt="Google"
+            width="18"
+            height="18"
+            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+          />
+          Continue with Google
+        </button>
 
-        <div className="signup-link">
-          <p>Don't have an account? <a href="/signup">Sign up</a></p>
+        <div className="auth-bottom-text">
+          Don’t have an account? <Link to="/signup">Sign up</Link>
         </div>
       </div>
     </div>

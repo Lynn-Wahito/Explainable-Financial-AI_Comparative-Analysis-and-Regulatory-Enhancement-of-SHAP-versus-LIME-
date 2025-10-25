@@ -1,3 +1,4 @@
+// src/main.jsx
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
@@ -11,10 +12,11 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import CustomerDashboard from "./pages/customer/CustomerDashboard";
 import AnalystDashboard from "./pages/analyst/AnalystDashboard";
 import AnalystReview from "./pages/analyst/AnalystReview";
-import "./styles/theme.css";
 import RegulatorDashboard from "./pages/regulator/RegulatorDashboard";
 
+import RoleGuard from "./components/RoleGuard"; 
 
+import "./styles/theme.css";
 import "./index.css";
 
 function Home() {
@@ -30,8 +32,6 @@ function Home() {
   );
 }
 
-
-
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
@@ -42,11 +42,49 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route path="/signup" element={<Signup />} />
         <Route path="/request-reset" element={<RequestReset />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/customer" element={<CustomerDashboard />} />
-        <Route path="/analyst" element={<AnalystDashboard />} />
-        <Route path="/analyst/review/:id" element={<AnalystReview />} />
-        <Route path="/regulator" element={<RegulatorDashboard />} />
+
+        {/* Protected dashboards by role */}
+        <Route
+          path="/admin"
+          element={
+            <RoleGuard allow={["admin"]}>
+              <AdminDashboard />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="/customer"
+          element={
+            <RoleGuard allow={["customer"]}>
+              <CustomerDashboard />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="/analyst"
+          element={
+            <RoleGuard allow={["analyst"]}>
+              <AnalystDashboard />
+            </RoleGuard>
+          }
+        />
+        {/* Optional: guard AnalystReview too */}
+        <Route
+          path="/analyst/review/:id"
+          element={
+            <RoleGuard allow={["analyst"]}>
+              <AnalystReview />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="/regulator"
+          element={
+            <RoleGuard allow={["regulator"]}>
+              <RegulatorDashboard />
+            </RoleGuard>
+          }
+        />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>

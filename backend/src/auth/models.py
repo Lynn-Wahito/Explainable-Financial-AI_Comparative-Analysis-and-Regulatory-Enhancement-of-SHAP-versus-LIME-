@@ -1,9 +1,8 @@
 # backend/src/auth/models.py
 from enum import Enum
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum as SAEnum
-from sqlalchemy.orm import declarative_base
-from ..db import Base
 from datetime import datetime
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum as SAEnum
+from ..db import Base
 
 class RoleEnum(str, Enum):
     CUSTOMER = "customer"
@@ -17,7 +16,8 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, nullable=False)
     hashed_password = Column(String, nullable=False)
-    
+
+    # Use RoleEnum for roles
     role = Column(SAEnum(RoleEnum, name="role_enum"), nullable=False, default=RoleEnum.CUSTOMER)
 
     is_active = Column(Boolean, default=True)
