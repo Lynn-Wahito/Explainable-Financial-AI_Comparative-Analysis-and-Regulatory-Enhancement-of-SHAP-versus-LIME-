@@ -1,0 +1,140 @@
+/* ====== Global Theme Variables (shared) ====== */
+:root {
+  /* Base */
+  --bg: #f8fafc;
+  --text: #0f172a;      /* darker for better readability */
+  --muted: #475569;     /* darker than before for visibility */
+  --card: #ffffff;
+  --card-alt: #f1f5f9;
+  --border: #e2e8f0;
+
+  /* Brand & Accents */
+  --primary: #6366f1;
+  --primary-contrast: #ffffff;
+  --accent: #10b981;
+
+  /* Semantic colors */
+  --danger: #ef4444;
+  --danger-strong: #991b1b;
+  --warning: #f59e0b;
+  --warning-strong: #b45309;
+  --success: #16a34a;
+  --success-strong: #065f46;
+  --info: #0ea5e9;
+  --info-strong: #075985;
+
+  /* Badges */
+  --badge-approved-bg: #dcfce7;
+  --badge-approved-text: #16a34a;
+  --badge-pending-bg: #fef3c7;
+  --badge-pending-text: #b45309;
+  --badge-review-bg: #e0e7ff;
+  --badge-review-text: #4f46e5;
+
+  /* Chrome */
+  --sidebar-bg: #ffffff;
+  --sidebar-text: #111827;
+  --navbar-bg: #ffffff;
+}
+
+:root[data-theme="dark"] {
+  --bg: #0b1220;
+  --text: #e5e7eb;
+  --muted: #cbd5e1;
+  --card: #0f172a;
+  --card-alt: #111827;
+  --border: #1f2937;
+
+  --primary: #818cf8;
+  --primary-contrast: #0b1220;
+  --accent: #22c55e;
+
+  --danger: #f87171;
+  --danger-strong: #fecaca;
+  --warning: #fbbf24;
+  --warning-strong: #fde68a;
+  --success: #34d399;
+  --success-strong: #86efac;
+  --info: #38bdf8;
+  --info-strong: #7dd3fc;
+
+  --badge-approved-bg: #064e3b;
+  --badge-approved-text: #34d399;
+  --badge-pending-bg: #7c2d12;
+  --badge-pending-text: #fde68a;
+  --badge-review-bg: #312e81;
+  --badge-review-text: #c7d2fe;
+
+  --sidebar-bg: #0f172a;
+  --sidebar-text: #e5e7eb;
+  --navbar-bg: #0f172a;
+}
+
+/* ====== Global Resets + Full-Viewport ====== */
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100%;
+}
+#root {
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+/* Utility */
+.hidden { display: none; }
+
+/* Headings consistency */
+h1, h2, h3, h4, h5 {
+  color: var(--text);
+  margin: 0;
+}
+
+/* Subtitles, secondary */
+.subtitle, .page-subtitle {
+  color: var(--muted);
+}
+
+/* Theme-aware “info panel” used in Customer status */
+.info-banner {
+  background: var(--card-alt);
+  border: 1px solid var(--border);
+  padding: 16px;
+  border-radius: 8px;
+}
+
+/* Theme-aware placeholders for explanation charts */
+.explain-placeholder {
+  background: var(--card-alt);
+  border: 2px dashed var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Risk banner */
+.score-banner {
+  border-radius: 12px;
+  text-align: center;
+  padding: 32px;
+  background: var(--card-alt);
+}
+.score-banner .score {
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--danger);
+}
+.score-banner .label {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--danger-strong);
+}
+.score-banner .meta {
+  margin-top: 12px;
+  color: var(--muted);
+}
