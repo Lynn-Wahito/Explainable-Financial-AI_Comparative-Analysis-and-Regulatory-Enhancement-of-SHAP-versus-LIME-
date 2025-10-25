@@ -72,9 +72,9 @@ def login(payload: LoginIn, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == payload.email).first()
     if not user or not verify_password(payload.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    # Direct JWT (OTP will replace this in Issue #4)
+    # Direct JWT 
     token = create_access_token(subject=str(user.id), data={"role": user.role, "email": user.email})
-    return {"access_token": token, "token_type": "bearer"}
+    return {"access_token": token, "token_type": "bearer", "role": user.role}
 
 @router.post("/request-reset")
 def request_reset(payload: RequestResetIn, db: Session = Depends(get_db)):

@@ -1,0 +1,178 @@
+.admin-root.theme-light {
+  --bg: #f8fafc;              /* body background */
+  --surface: #ffffff;          /* cards/navbar/sidebar */
+  --muted: #e5e7eb;            /* borders */
+  --text: #0f172a;             /* primary text */
+  --text-dim: #475569;         /* secondary text */
+  --brand: #4f46e5;            /* indigo */
+  --accent: #059669;           /* green */
+  --warn: #d97706;             /* amber */
+  --danger: #dc2626;           /* red */
+  --shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+/* ===== Navbar ===== */
+.admin-root.theme-light .navbar {
+  background: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid #e5e7eb;
+  color: var(--text);
+  backdrop-filter: blur(10px);
+}
+
+.admin-root.theme-light .navbar .logo {
+  color: #0b1324;
+  font-weight: 800;
+}
+
+.admin-root.theme-light .navbar .nav-link {
+  color: var(--text-dim);
+  font-weight: 600;
+}
+.admin-root.theme-light .navbar .nav-link:hover {
+  color: var(--text);
+  background: #eef2f7;
+}
+
+/* ===== Sidebar ===== */
+.admin-root.theme-light .sidebar {
+  background: #ffffff;
+  border-right: 1px solid #e5e7eb;
+}
+
+.admin-root.theme-light .sidebar .sidebar-item {
+  color: #334155;
+  font-weight: 600;
+}
+.admin-root.theme-light .sidebar .sidebar-item:hover {
+  color: #1f2937;
+  background: #f1f5f9;
+}
+.admin-root.theme-light .sidebar .sidebar-item.active {
+  background: rgba(79, 70, 229, 0.12);
+  color: #1f2937;
+  border: 1px solid rgba(79, 70, 229, 0.3);
+}
+
+/* ===== Main Content ===== */
+.admin-root.theme-light .main-content {
+  background: #f8fafc;
+  color: var(--text);
+}
+
+/* ===== Cards & Stats ===== */
+.admin-root.theme-light .card,
+.admin-root.theme-light .stat-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  box-shadow: var(--shadow);
+  color: var(--text);
+}
+
+.admin-root.theme-light .card .card-header {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.admin-root.theme-light .stat-card .stat-value {
+  color: #0f172a;
+  font-weight: 800;
+}
+.admin-root.theme-light .stat-card .stat-label {
+  color: #334155;
+  font-weight: 600;
+}
+
+/* ===== Titles & Headings ===== */
+.admin-root.theme-light .page-title {
+  color: #0f172a;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.admin-root.theme-light .page-subtitle {
+  color: #334155;
+  font-weight: 500;
+}
+
+.admin-root.theme-light .card-title {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+/* ===== Tables ===== */
+.admin-root.theme-light .data-table-wrapper {
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.admin-root.theme-light .data-table {
+  background: #ffffff;
+}
+.admin-root.theme-light .data-table thead {
+  background: #f9fafb;
+}
+.admin-root.theme-light .data-table thead th {
+  color: #0f172a;
+  font-weight: 700;
+}
+.admin-root.theme-light .data-table th,
+.admin-root.theme-light .data-table td {
+  border-bottom: 1px solid #e5e7eb;
+  color: #0f172a;
+}
+.admin-root.theme-light .data-table tbody tr:hover {
+  background: #f3f4f6;
+}
+
+/* ===== Badges ===== */
+.admin-root.theme-light .badge-approved {
+  background: rgba(16, 185, 129, 0.12);
+  color: #047857;
+}
+.admin-root.theme-light .badge-pending {
+  background: rgba(245, 158, 11, 0.12);
+  color: #92400e;
+}
+.admin-root.theme-light .badge-review {
+  background: rgba(79, 70, 229, 0.12);
+  color: #3730a3;
+}
+
+/* ===== Buttons ===== */
+.admin-root.theme-light .btn {
+  color: #111827;
+  background: #f9fafb;
+  border: 1px solid #d1d5db;
+}
+.admin-root.theme-light .btn:hover {
+  background: #f3f4f6;
+}
+.admin-root.theme-light .btn-primary {
+  background: linear-gradient(180deg, #6366f1, #4f46e5);
+  color: white;
+  border: none;
+}
+.admin-root.theme-light .btn-secondary {
+  background: #f3f4f6;
+  color: #111827;
+}
+.admin-root.theme-light .btn-success {
+  background: linear-gradient(180deg, #10b981, #059669);
+  color: white;
+  border: none;
+}
+.admin-root.theme-light .btn-danger {
+  background: linear-gradient(180deg, #ef4444, #b91c1c);
+  color: white;
+  border: none;
+}
+
+/* ===== Inputs ===== */
+.admin-root.theme-light .form-input {
+  background: #ffffff;
+  color: #111827;
+  border: 1px solid #d1d5db;
+}
+.admin-root.theme-light .form-input:focus {
+  border-color: rgba(79, 70, 229, 0.5);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}

@@ -7,6 +7,7 @@ import Signup from "./pages/auth/Signup";
 import RequestReset from "./pages/auth/RequestReset";
 import ResetPassword from "./pages/auth/ResetPassword";
 import Dashboard from "./pages/Dashboard";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 
 import "./index.css";
 
@@ -23,6 +24,8 @@ function Home() {
   );
 }
 
+
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
@@ -33,6 +36,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route path="/signup" element={<Signup />} />
         <Route path="/request-reset" element={<RequestReset />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/admin" element={<AdminDashboard />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>
