@@ -1,50 +1,51 @@
 # backend/src/auth/rbac_routes.py
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
-from ..db import SessionLocal
-from .models import User
-from .dependencies import get_current_user, require_roles
+
+from .models import User, RoleEnum
+from .dependencies import get_db, require_roles
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
+# ---- Schemas
 class AssignRoleIn(BaseModel):
-    target_email: EmailStr
-    new_role: str  # "customer" | "analyst" | "regulator" | "admin"
+    email: EmailStr
+    role: RoleEnum  # Enum: CUSTOMER / ANALYST / REGULATOR / ADMIN
 
-ALLOWED_ROLES = {"customer", "analyst", "regulator", "admin"}
+class UserOut(BaseModel):
+    id: int
+    email: EmailStr
+    role: RoleEnum
+    is_active: bool
 
-@router.get("/users")
-def list_users(_=Depends(require_roles(["admin"])), db: Session = Depends(get_db)):
-    users = db.query(User).all()
-    return [
-        {
-            "id": u.id,
-            "email": u.email,
-            "role": u.role,
-            "is_verified": u.is_verified
-        }
-        for u in users
-    ]
+    class Config:
+        orm_mode = True  # Pydantic v1 (FastAPI default)
+
+@router.get("/users", response_model=List[UserOut])
+def list_users(
+    db: Session = Depends(get_db),
+    _: User = Depends(require_roles(RoleEnum.ADMIN)),
+):
+    return db.query(User).order_by(User.id.asc()).all()
 
 @router.post("/assign-role")
-def assign_role(payload: AssignRoleIn, admin=Depends(require_roles(["admin"])), db: Session = Depends(get_db)):
-    if payload.new_role not in ALLOWED_ROLES:
-        raise HTTPException(status_code=400, detail="Invalid role")
-
-    user = db.query(User).filter(User.email == payload.target_email).first()
+def assign_role(
+    payload: AssignRoleIn,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_roles(RoleEnum.ADMIN)),
+):
+    user = db.query(User).filter(User.email == payload.email).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    user.role = payload.new_role
+    # Optional: Prevent Admin from demoting themselves
+    if user.id == admin.id and payload.role != RoleEnum.ADMIN:
+        raise HTTPException(status_code=400, detail="Admin cannot demote self")
+
+    user.role = payload.role
     db.add(user)
     db.commit()
     db.refresh(user)
-    return {"msg": "role_updated", "email": user.email, "role": user.role}
+    return {"msg": "role updated", "email": user.email, "role": user.role.value}
