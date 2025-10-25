@@ -8,6 +8,12 @@ import RequestReset from "./pages/auth/RequestReset";
 import ResetPassword from "./pages/auth/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import CustomerDashboard from "./pages/customer/CustomerDashboard";
+import AnalystDashboard from "./pages/analyst/AnalystDashboard";
+import AnalystReview from "./pages/analyst/AnalystReview";
+import "./styles/theme.css";
+import RegulatorDashboard from "./pages/regulator/RegulatorDashboard";
+
 
 import "./index.css";
 
@@ -37,6 +43,10 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route path="/request-reset" element={<RequestReset />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/customer" element={<CustomerDashboard />} />
+        <Route path="/analyst" element={<AnalystDashboard />} />
+        <Route path="/analyst/review/:id" element={<AnalystReview />} />
+        <Route path="/regulator" element={<RegulatorDashboard />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>

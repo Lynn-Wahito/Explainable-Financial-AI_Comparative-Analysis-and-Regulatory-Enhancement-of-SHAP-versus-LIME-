@@ -1,0 +1,315 @@
+/* ANALYST SCOPE */
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;   /* absolute guard */
+}
+
+.analyst-scope {
+  box-sizing: border-box;
+}
+.analyst-scope *, .analyst-scope *::before, .analyst-scope *::after {
+  box-sizing: inherit;
+}
+
+/* ---- Dark defaults ---- */
+.analyst-scope {
+  --an-app-bg: #0b2a45;
+  --an-surface: #0f172a;
+  --an-surface-2: #111827;
+  --an-card: #0f172a;
+  --an-text: #e5e7eb;
+  --an-muted: #9ca3af;
+  --an-border: #1f2937;
+
+  --an-primary: #6366f1;
+  --an-accent:  #4f46e5;
+  --an-good:    #10b981;
+  --an-danger:  #ef4444;
+  --an-warn:    #f59e0b;
+
+  background: var(--an-app-bg);
+  color: var(--an-text);
+  min-height: 100vh;
+
+  overflow-x: hidden;  /* guard */
+}
+
+/* ---- Light theme ---- */
+.analyst-scope.theme-light {
+  --an-app-bg: #eef2f7;
+  --an-surface: #ffffff;
+  --an-surface-2: #f8fafc;
+  --an-card: #ffffff;
+  --an-text: #0f172a;
+  --an-muted: #6b7280;
+  --an-border: #e5e7eb;
+
+  --an-primary: #4f46e5;
+  --an-accent:  #4338ca;
+  --an-good:    #16a34a;
+  --an-danger:  #dc2626;
+  --an-warn:    #b45309;
+}
+
+/* =========================
+   NAVBAR
+   ========================= */
+.analyst-scope .an-navbar {
+  position: sticky; top: 0; z-index: 50;
+  height: 64px; padding: 0 24px;
+  background: var(--an-surface);
+  border-bottom: 1px solid var(--an-border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.analyst-scope .an-logo { font-weight: 800; font-size: 22px; color: var(--an-text); }
+.analyst-scope .an-nav-items { display: flex; align-items: center; gap: 16px; }
+.analyst-scope .an-nav-link {
+  border: 0; background: transparent; color: var(--an-text);
+  padding: 8px 12px; border-radius: 8px; font-weight: 700; cursor: pointer;
+}
+.analyst-scope .an-theme-toggle {
+  padding: 8px 14px; border-radius: 12px;
+  border: 1px solid var(--an-border);
+  background: var(--an-surface-2); color: var(--an-text);
+  cursor: pointer;
+}
+.analyst-scope .an-user-profile { display: flex; align-items: center; gap: 12px; }
+.analyst-scope .an-user-name { font-weight: 700; color: var(--an-text); }
+.analyst-scope .an-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--an-primary); color: #fff;
+  display: grid; place-items: center; font-weight: 800;
+}
+
+/* =========================
+   SIDEBAR + MAIN
+   ========================= */
+.analyst-scope .an-sidebar {
+  position: fixed; left: 0; top: 64px; bottom: 0;
+  width: 290px; padding: 16px;
+  background: var(--an-surface);
+  border-right: 1px solid var(--an-border);
+  overflow-y: auto;        /* long menus won't affect layout */
+}
+
+.analyst-scope .an-sidebar-item {
+  width: 100%; text-align: left;
+  padding: 14px 16px; margin-bottom: 12px;
+  border-radius: 12px; border: 1px solid transparent;
+  background: transparent; color: var(--an-text);
+  font-weight: 700; cursor: pointer;
+}
+.analyst-scope .an-sidebar-item.active {
+  background: rgba(99,102,241,.12);
+  border-color: var(--an-border);
+}
+
+/* MAIN: let the browser compute remaining width (no 100vw) */
+.analyst-scope .an-main {
+  margin-left: 290px;        /* space for sidebar */
+  padding: 24px;
+  max-width: 100%;           /* never exceed viewport */
+}
+
+/* Content wrapper: center and clamp, but never overflow */
+.analyst-scope .an-content {
+  width: 100%;
+  max-width: 1200px;         /* nice readable width */
+  margin: 0 auto;
+}
+
+/* =========================
+   HEADERS
+   ========================= */
+.analyst-scope .an-page-title { font-size: 34px; font-weight: 800; margin: 8px 0; color: var(--an-text); }
+.analyst-scope .an-page-subtitle { color: var(--an-muted); }
+
+/* =========================
+   STATS
+   ========================= */
+.analyst-scope .an-stats-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px; margin: 20px 0 24px;
+}
+.analyst-scope .an-stat-card {
+  background: var(--an-card);
+  border: 1px solid var(--an-border);
+  border-radius: 14px; padding: 18px;
+  box-shadow: 0 8px 22px rgba(0,0,0,.18);
+}
+.analyst-scope .an-stat-value { font-size: 36px; font-weight: 800; }
+.analyst-scope .an-warn { color: var(--an-warn); }
+.analyst-scope .an-good { color: var(--an-good); }
+.analyst-scope .an-bad  { color: var(--an-danger); }
+.analyst-scope .an-accent { color: var(--an-primary); }
+.analyst-scope .an-stat-label { color: var(--an-muted); font-weight: 600; }
+
+/* =========================
+   CARDS & TABLES
+   ========================= */
+.analyst-scope .an-card {
+  background: var(--an-card);
+  border: 1px solid var(--an-border);
+  border-radius: 14px; padding: 16px; margin-bottom: 20px;
+}
+.analyst-scope .an-card.soft { background: var(--an-surface-2); }
+.analyst-scope .an-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.analyst-scope .an-card-title { font-size: 18px; font-weight: 800; color: var(--an-text); }
+
+/* Table wrapper scrolls if necessary; table never exceeds container */
+.analyst-scope .an-table-wrap { width: 100%; overflow-x: auto; }
+.analyst-scope .an-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;                /* prevents runaway width */
+}
+.analyst-scope .an-table th,
+.analyst-scope .an-table td {
+  text-align: left; padding: 12px 14px;
+  border-bottom: 1px solid var(--an-border);
+  color: var(--an-text);
+  white-space: normal;                /* allow wrapping */
+  word-break: break-word;
+}
+.analyst-scope .an-table thead th { background: var(--an-surface-2); font-weight: 800; }
+.analyst-scope .an-table tbody tr:hover { background: rgba(99,102,241,.08); }
+
+/* Buttons / badges */
+.analyst-scope .an-btn {
+  padding: 8px 14px; border-radius: 10px;
+  border: 1px solid var(--an-border);
+  background: var(--an-surface-2);
+  color: var(--an-text); font-weight: 800; cursor: pointer;
+}
+.analyst-scope .an-btn-primary { background: var(--an-primary); color: #fff; border-color: var(--an-primary); }
+.analyst-scope .an-badge {
+  padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 800;
+}
+.analyst-scope .an-badge-pending { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+.analyst-scope .an-badge-review  { background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe; }
+.analyst-scope .an-badge-neutral { background: #f1f5f9; color: #334155; border: 1px solid #e2e8f0; }
+
+/* =========================
+   REVIEW PAGE
+   ========================= */
+.analyst-scope .an-risk-banner {
+  text-align: center; padding: 28px; border-radius: 12px; margin-bottom: 18px;
+  background: linear-gradient(135deg, #fef2f2, #fee2e2);
+  border: 1px solid #fecaca; color: #7f1d1d;
+}
+.analyst-scope .an-risk-banner .score { font-size: 44px; font-weight: 800; color: #ef4444; }
+.analyst-scope .an-risk-banner .level { font-weight: 800; font-size: 18px; }
+.analyst-scope .an-risk-banner .meta { margin-top: 8px; color: #7f1d1d; }
+
+.analyst-scope .an-section-title { margin: 24px 0 14px; font-size: 18px; font-weight: 800; color: var(--an-text); }
+.analyst-scope .an-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+.analyst-scope .an-expl { border: 2px solid var(--an-border); border-radius: 12px; padding: 16px; }
+.analyst-scope .an-expl .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.analyst-scope .chip { padding: 4px 10px; border-radius: 999px; font-size: 12px; color: #fff; font-weight: 800; }
+.analyst-scope .chip.blue { background: #667eea; }
+.analyst-scope .chip.green { background: #10b981; }
+
+.analyst-scope .placeholder {
+  height: 180px; border: 2px dashed var(--an-border);
+  border-radius: 8px; display: grid; place-items: center;
+  color: var(--an-muted); background: var(--an-surface-2);
+}
+.analyst-scope .pairs { list-style: none; padding: 0; margin: 12px 0; }
+.analyst-scope .pairs li {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 12px; border-radius: 8px; margin-bottom: 8px; font-weight: 600;
+}
+.analyst-scope .pairs li.neg { background: #fee2e2; color: #991b1b; }
+.analyst-scope .pairs li.pos { background: #dcfce7; color: #166534; }
+
+.analyst-scope .meta-box {
+  background: var(--an-surface-2); border: 1px solid var(--an-border);
+  padding: 12px; border-radius: 8px; font-size: 14px; color: var(--an-text);
+}
+.analyst-scope .win { color: var(--an-good); font-weight: 800; }
+.analyst-scope .an-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.analyst-scope .an-actions.center { justify-content: center; }
+
+/* =========================
+   RECENT DECISIONS KPI STRIP
+   ========================= */
+.analyst-scope .an-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.analyst-scope .an-kpi {
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid var(--an-border);
+  box-shadow: 0 6px 20px rgba(0,0,0,.12);
+}
+
+.analyst-scope .an-kpi .kpi-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.analyst-scope .an-kpi .kpi-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.analyst-scope .an-kpi .kpi-sub {
+  margin-top: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* Dark theme colors */
+.analyst-scope .kpi-approved {
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(16, 185, 129, 0.35);
+  color: #10b981;
+}
+.analyst-scope .kpi-declined {
+  background: rgba(239, 68, 68, 0.14);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #ef4444;
+}
+.analyst-scope .kpi-pending {
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(245, 158, 11, 0.35);
+  color: #f59e0b;
+}
+
+/* Light theme overrides */
+.analyst-scope.theme-light .kpi-approved {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #16a34a;
+}
+.analyst-scope.theme-light .kpi-declined {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #dc2626;
+}
+.analyst-scope.theme-light .kpi-pending {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #b45309;
+}
+
+/* Responsive stack */
+@media (max-width: 768px) {
+  .analyst-scope .an-kpi-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+@media (max-width: 1024px){
+  .analyst-scope .an-two-col { grid-template-columns: 1fr; }
+}
