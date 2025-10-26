@@ -14,6 +14,7 @@ from .auth import routes as auth_routes
 from .auth import rbac_routes as admin_routes
 from .ml import predict_api as ml_api        # /ml/info, /ml/reload, /ml/predict
 from .ml import routes as ml_misc            # /ml/health
+from .ml import xai_routes as ml_xai         # /explain/shap, /explain/lime  <-- SHAP/LIME endpoints
 
 app = FastAPI(title="Backend API")
 
@@ -25,18 +26,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount routers ONCE
+# Mount routers ONCE (avoid duplicates)
 app.include_router(auth_routes.router)
 app.include_router(admin_routes.router)
-app.include_router(ml_api.router)   # <- this gives /ml/info, /ml/reload, /ml/predict
-app.include_router(ml_misc.router)  # <- /ml/health
+app.include_router(ml_api.router)   # /ml/info, /ml/reload, /ml/predict
+app.include_router(ml_misc.router)  # /ml/health
+app.include_router(ml_xai.router)   # /explain/shap, /explain/lime
 
 @app.on_event("startup")
 def on_startup():
     Base.metadata.create_all(bind=engine)
     insp = inspect(engine)
     print("✅ Tables:", insp.get_table_names())
-    # PRINT ROUTES to confirm /ml/info is mounted
+    # PRINT ROUTES to confirm everything is mounted
     print("✅ Routes:")
     for r in app.routes:
         try:

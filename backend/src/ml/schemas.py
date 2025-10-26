@@ -1,5 +1,7 @@
 # backend/src/ml/schemas.py
+from typing import List, Optional
 from pydantic import BaseModel, Field
+
 
 class PredictIn(BaseModel):
     # Exactly the 23 numeric features used by training
@@ -38,4 +40,29 @@ class PredictOut(BaseModel):
 
     class Config:
         # Pydantic v2 compatibility (avoids warnings when used with ORM objects)
+        from_attributes = True
+
+
+class InfoOut(BaseModel):
+    loaded: bool
+    model_path: Optional[str] = None
+    model_type: Optional[str] = None
+    feature_schema: List[str]
+    predict_proba: bool
+    debug: Optional[str] = None  # extra diagnostic info
+
+
+class XaiTopFeature(BaseModel):
+    feature: str
+    value: Optional[float] = None
+    impact: float
+
+
+class XaiResponse(BaseModel):
+    model: str
+    method: str  # "shap" or "lime"
+    top_features: List[XaiTopFeature]
+    plot_png_base64: Optional[str] = None
+
+    class Config:
         from_attributes = True
