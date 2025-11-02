@@ -7,7 +7,7 @@ export default function AnalystDashboard() {
   const [view, setView] = useState("dashboard"); // "dashboard" | "review"
 
   const mockPriority = [
-    { id: "#LN-2024-003", name: "John Smith", amount: "$45,000", risk: 0.78, conf: "94.2%", status: "Review Required" },
+    { id: "#LN-2024-003", name: "John Smith", amount: "$45,000", risk: 0.78, conf: "94.2%", status: "For Review" },
     { id: "#LN-2024-004", name: "Maria Garcia", amount: "$32,000", risk: 0.24, conf: "96.8%", status: "In Review" },
     { id: "#LN-2024-005", name: "David Lee",  amount: "$28,000", risk: 0.52, conf: "88.5%", status: "Pending" }
   ];
@@ -18,10 +18,6 @@ export default function AnalystDashboard() {
       <div className="an-navbar">
         <div className="an-logo">CreditAI</div>
         <div className="an-nav-items">
-          <button className="an-nav-link" onClick={() => setView("dashboard")}>Dashboard</button>
-          <button className="an-nav-link">Applications</button>
-          <button className="an-nav-link">Reports</button>
-
           <button
             className="an-theme-toggle"
             onClick={() => setTheme((t) => (t === "light" ? "dark" : "light"))}

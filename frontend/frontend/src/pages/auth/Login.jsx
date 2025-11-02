@@ -1,7 +1,9 @@
 // src/pages/auth/Login.jsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../../styles/auth.css";
+
+const API_BASE = "http://127.0.0.1:8000";
 
 export default function Login() {
   const nav = useNavigate();
@@ -9,55 +11,97 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Decode JWT payload safely
+  // Robust base64url decoder (handles padding)
   const decodeJwt = (token) => {
     try {
-      const base64 = token.split(".")[1];
-      const json = atob(base64.replace(/-/g, "+").replace(/_/g, "/"));
+      const part = token.split(".")[1];
+      if (!part) return null;
+      let base64 = part.replace(/-/g, "+").replace(/_/g, "/");
+      // pad with '=' to length multiple of 4
+      while (base64.length % 4 !== 0) base64 += "=";
+      const json = atob(base64);
       return JSON.parse(json);
-    } catch (e) {
-      console.error("Failed to decode token", e);
+    } catch {
       return null;
     }
   };
+
+  const routeByRole = (role) => {
+    const r = (role || "").toLowerCase();
+    const map = {
+      customer: "/customer",
+      analyst: "/analyst",
+      regulator: "/regulator",
+      admin: "/admin",
+    };
+    return map[r] || "/dashboard";
+  };
+
+  // If already logged in, bounce to the correct dashboard immediately
+  useEffect(() => {
+    const existing = localStorage.getItem("access_token");
+    if (!existing) return;
+    const p = decodeJwt(existing);
+    const role = (p?.role || p?.data?.role || p?.claims?.role || "").toLowerCase();
+    const target = routeByRole(role);
+    if (target) {
+      // Use hard redirect to avoid any guard/state edge cases
+      window.location.replace(target);
+    }
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch("http://127.0.0.1:8000/auth/login", {
+      const res = await fetch(`${API_BASE}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
+
       const data = await res.json();
 
+      // 1) Success: got a token immediately (seed-bypass or flows that return token)
       if (res.ok && data.access_token) {
         const token = data.access_token;
         localStorage.setItem("access_token", token);
 
-        // Read role/email from token (your backend sets data.role)
         const payload = decodeJwt(token);
         const role =
-          payload?.role || payload?.data?.role || payload?.claims?.role || null;
+          (payload?.role || payload?.data?.role || payload?.claims?.role || "").toLowerCase();
         const userEmail = payload?.email || payload?.data?.email || email;
 
         if (role) localStorage.setItem("role", role);
         if (userEmail) localStorage.setItem("email", userEmail);
 
-        // Role → Route map
-        const routeByRole = {
-          customer: "/customer",
-          analyst: "/analyst",
-          regulator: "/regulator",
-          admin: "/admin",
-        };
-
-        // Redirect based on role (fallback to /dashboard)
-        nav(routeByRole[role] || "/dashboard");
-      } else {
-        alert(data.detail || "Login failed");
+        const target = routeByRole(role);
+        window.location.replace(target);
+        return;
       }
+
+      // 2) 2FA required: route to the TwoFactor screen
+      if (res.ok && data.twofa_required) {
+        localStorage.setItem("email", email);
+        // TwoFactor will complete auth and then hard-redirect
+        nav("/twofa");
+        return;
+      }
+
+      // 3) Typical errors
+      if (res.status === 403) {
+        // pending approval, etc.
+        localStorage.setItem("email", email);
+        nav("/pending-approval");
+        return;
+      }
+      if (res.status === 401) {
+        alert(data.detail || "Invalid credentials.");
+        return;
+      }
+
+      // Fallback
+      alert(data.detail || "Unexpected response from server.");
     } catch (err) {
       console.error(err);
       alert("Network error. Is the API running?");
@@ -124,12 +168,11 @@ export default function Login() {
 
         <div className="divider"><span>or</span></div>
 
-        {/* Google ONLY on Login */}
         <button
           type="button"
           className="btn btn-google"
           onClick={() =>
-            (window.location.href = "http://127.0.0.1:8000/auth/google")
+            (window.location.href = `${API_BASE}/auth/google`)
           }
         >
           <img
