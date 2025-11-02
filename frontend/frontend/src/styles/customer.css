@@ -309,3 +309,37 @@
 /* ---------- Links ---------- */
 .customer-scope a { color: var(--primary); text-decoration: none; }
 .customer-scope a:hover { text-decoration: underline; }
+
+.timeline {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+.timeline-step {
+  text-align: center;
+  flex: 1;
+}
+.timeline-step .dot {
+  font-size: 1.5rem;
+}
+.timeline-step.active .dot {
+  color: var(--warning);
+}
+.timeline-step.done .dot {
+  color: var(--accent);
+}
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.info-box {
+  background: var(--info-soft);
+  border: 1px solid var(--info-border);
+  border-radius: 6px;
+  padding: 1rem;
+  margin-top: 1.5rem;
+  color: var(--info-strong);
+}

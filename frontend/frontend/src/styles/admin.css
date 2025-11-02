@@ -189,6 +189,11 @@
   color: var(--danger);
   border: 1px solid rgba(239,68,68,.4);
 }
+.admin-scope .action-buttons {
+  display: inline-flex;   /* keeps them side-by-side inline within the cell */
+  align-items: center;
+  gap: 10px;              /* <-- adjust spacing here */
+}
 
 /* Responsive */
 @media (max-width: 1100px) {

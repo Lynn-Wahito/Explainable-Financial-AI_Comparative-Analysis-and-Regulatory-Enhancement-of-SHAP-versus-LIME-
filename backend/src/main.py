@@ -2,6 +2,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import inspect
+from .settings import CORS_ORIGINS
+from datetime import datetime
 
 from .db import engine, Base
 
@@ -15,12 +17,19 @@ from .auth import rbac_routes as admin_routes
 from .ml import predict_api as ml_api        # /ml/info, /ml/reload, /ml/predict
 from .ml import routes as ml_misc            # /ml/health
 from .ml import xai_routes as ml_xai         # /explain/shap, /explain/lime  <-- SHAP/LIME endpoints
+from .customer import routes as customer_routes
+
+from dotenv import load_dotenv
+load_dotenv()  # will load backend/.env by default when run from backend/
 
 app = FastAPI(title="Backend API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -32,9 +41,11 @@ app.include_router(admin_routes.router)
 app.include_router(ml_api.router)   # /ml/info, /ml/reload, /ml/predict
 app.include_router(ml_misc.router)  # /ml/health
 app.include_router(ml_xai.router)   # /explain/shap, /explain/lime
+app.include_router(customer_routes.router)
 
 @app.on_event("startup")
 def on_startup():
+    app.state.started_at = datetime.utcnow()
     Base.metadata.create_all(bind=engine)
     insp = inspect(engine)
     print("✅ Tables:", insp.get_table_names())

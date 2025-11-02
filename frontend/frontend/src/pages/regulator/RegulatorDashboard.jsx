@@ -44,19 +44,6 @@ export default function RegulatorDashboard() {
         <div className="logo">CreditAI</div>
 
         <div className="nav-items">
-          <button className="nav-link" onClick={() => setActiveView("dashboard")}>
-            Dashboard
-          </button>
-          <button className="nav-link" onClick={() => setActiveView("dashboard")}>
-            Compliance
-          </button>
-          <button className="nav-link" onClick={() => setActiveView("audit")}>
-            Audit Trail
-          </button>
-          <button className="nav-link" onClick={() => setActiveView("reports")}>
-            Reports
-          </button>
-
           <button
             className="theme-toggle"
             onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}

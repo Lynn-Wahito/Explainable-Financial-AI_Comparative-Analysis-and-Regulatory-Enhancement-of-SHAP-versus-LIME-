@@ -13,6 +13,9 @@ import CustomerDashboard from "./pages/customer/CustomerDashboard";
 import AnalystDashboard from "./pages/analyst/AnalystDashboard";
 import AnalystReview from "./pages/analyst/AnalystReview";
 import RegulatorDashboard from "./pages/regulator/RegulatorDashboard";
+import PendingApproval from "./pages/auth/PendingApproval";
+import TwoFactor from "./pages/auth/TwoFactor";
+import Provision2FA from "./pages/auth/Provision2FA";
 
 import RoleGuard from "./components/RoleGuard"; 
 
@@ -42,6 +45,10 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route path="/signup" element={<Signup />} />
         <Route path="/request-reset" element={<RequestReset />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/pending-approval" element={<PendingApproval />} />
+        <Route path="/provision-2fa" element={<Provision2FA />} />
+        <Route path="/twofa" element={<TwoFactor />} />
+
 
         {/* Protected dashboards by role */}
         <Route

@@ -4,37 +4,60 @@ import "../../styles/auth.css";
 
 export default function Signup() {
   const nav = useNavigate();
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [fullName, setFullName]   = useState("");
+  const [email, setEmail]         = useState("");
+  const [password, setPassword]   = useState("");
+  const [confirm, setConfirm]     = useState("");
+  const [loading, setLoading]     = useState(false);
 
-  const handleSignup = async (e) => {
-    e.preventDefault();
-    if (password !== confirm) {
-      return alert("Passwords do not match.");
-    }
-    setLoading(true);
+  async function handleSignup(e) {
+  e.preventDefault();
+
+  if (!fullName.trim()) return alert("Please enter your full name.");
+  if (password !== confirm) return alert("Passwords do not match.");
+
+  setLoading(true);
+  try {
+    const resp = await fetch("http://127.0.0.1:8000/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        full_name: fullName.trim(),     // <-- send full_name (backend expects this)
+        // If you keep the alias change above, sending fullName also works:
+        // fullName: fullName.trim(),
+        email: email.trim(),
+        password,
+        confirm_password: confirm,
+      }),
+    });
+
+    let data;
     try {
-      const res = await fetch("http://127.0.0.1:8000/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }), // backend: email + password
-      });
-      const data = await res.json();
-      if (res.ok) {
-        alert("✅ Registration successful!");
-        nav("/login");
-      } else {
-        alert(data.detail || "Signup failed. Please try again.");
-      }
-    } catch (err) {
-      alert("Network error. Is the API running?");
-    } finally {
-      setLoading(false);
+      data = await resp.json();    // parse body once
+    } catch {
+      data = {};
     }
-  };
+
+    if (resp.ok) {
+      alert(data.message || "Account created. Pending admin approval.");
+      // optional: pass email in state
+      nav("/pending-approval", { state: { email: email.trim() } });
+    } else {
+      console.error("Register error payload:", data);
+      const msg =
+        (Array.isArray(data?.detail) && data.detail[0]?.msg) || // pydantic error format
+        data?.detail ||
+        data?.message ||
+        "Signup failed. Please check your details.";
+      alert(msg);
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Network error. Is the API running?");
+  } finally {
+    setLoading(false);
+  }
+}
 
   return (
     <div className="auth-overlay">
