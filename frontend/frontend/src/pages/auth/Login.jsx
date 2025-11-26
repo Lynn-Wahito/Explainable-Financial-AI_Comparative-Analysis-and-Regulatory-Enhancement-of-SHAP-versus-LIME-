@@ -17,8 +17,7 @@ export default function Login() {
       const part = token.split(".")[1];
       if (!part) return null;
       let base64 = part.replace(/-/g, "+").replace(/_/g, "/");
-      // pad with '=' to length multiple of 4
-      while (base64.length % 4 !== 0) base64 += "=";
+      while (base64.length % 4 !== 0) base64 += "="; // pad
       const json = atob(base64);
       return JSON.parse(json);
     } catch {
@@ -45,7 +44,6 @@ export default function Login() {
     const role = (p?.role || p?.data?.role || p?.claims?.role || "").toLowerCase();
     const target = routeByRole(role);
     if (target) {
-      // Use hard redirect to avoid any guard/state edge cases
       window.location.replace(target);
     }
   }, []);
@@ -62,7 +60,7 @@ export default function Login() {
 
       const data = await res.json();
 
-      // 1) Success: got a token immediately (seed-bypass or flows that return token)
+      // 1) Success: got a token immediately (seed-bypass case)
       if (res.ok && data.access_token) {
         const token = data.access_token;
         localStorage.setItem("access_token", token);
@@ -80,17 +78,15 @@ export default function Login() {
         return;
       }
 
-      // 2) 2FA required: route to the TwoFactor screen
+      // 2) 2FA required for non-seed users
       if (res.ok && data.twofa_required) {
         localStorage.setItem("email", email);
-        // TwoFactor will complete auth and then hard-redirect
         nav("/twofa");
         return;
       }
 
       // 3) Typical errors
       if (res.status === 403) {
-        // pending approval, etc.
         localStorage.setItem("email", email);
         nav("/pending-approval");
         return;
@@ -166,24 +162,6 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="divider"><span>or</span></div>
-
-        <button
-          type="button"
-          className="btn btn-google"
-          onClick={() =>
-            (window.location.href = `${API_BASE}/auth/google`)
-          }
-        >
-          <img
-            alt="Google"
-            width="18"
-            height="18"
-            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-          />
-          Continue with Google
-        </button>
-
         <div className="auth-bottom-text">
           Don’t have an account? <Link to="/signup">Sign up</Link>
         </div>
@@ -191,3 +169,4 @@ export default function Login() {
     </div>
   );
 }
+
