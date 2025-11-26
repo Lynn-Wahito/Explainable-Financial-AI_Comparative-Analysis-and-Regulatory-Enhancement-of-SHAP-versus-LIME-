@@ -1,0 +1,113 @@
+MODEL INFORMATION
+	•	Model used: XGBoost (predicts credit risk)
+	•	Dataset used: UCI Credit Card Default Dataset
+	•	Database: SQLite (via SQLAlchemy ORM)
+	•	Goal: Predict the chance of loan default and explain the results using SHAP and LIME
+
+⸻
+
+SEX
+1 → Male
+2 → Female
+
+⸻
+
+EDUCATION
+1 → Graduate School
+2 → University
+3 → High School
+4 → Others or Unknown
+
+(Some datasets include 0, 5, or 6 but these are treated as “unknown.”)
+
+⸻
+
+MARRIAGE
+1 → Married
+2 → Single
+3 → Others (Divorced or Unknown)
+
+⸻
+
+PAYMENT HISTORY (PAY_0 to PAY_6)
+These show the customer’s repayment behavior for the last six months.
+PAY_0 represents the most recent month, while PAY_6 is six months ago.
+
+Values:
+-1 → Paid on time
+0 → Paid fully
+1 → 1 month late
+2 → 2 months late
+3 to 9 → 3 to 9 months late
+
+Higher numbers mean more late payments (riskier).
+Lower or negative values mean timely payments (less risky).
+
+⸻
+
+FINANCIAL FIELDS
+LIMIT_BAL → Credit limit approved
+BILL_AMT1–6 → Total bill for each month
+PAY_AMT1–6 → Amount actually paid each month
+
+__________________________________________
+
+----------------------------------
+LOW RISK CUSTOMER - MODEL TEST
+----------------------------------
+
+{
+  "LIMIT_BAL": 100000,
+  "SEX": 2,
+  "EDUCATION": 2,
+  "MARRIAGE": 1,
+  "AGE": 30,
+  "PAY_0": 0,
+  "PAY_2": 0,
+  "PAY_3": 0,
+  "PAY_4": 0,
+  "PAY_5": 0,
+  "PAY_6": 0,
+  "BILL_AMT1": 30000,
+  "BILL_AMT2": 28000,
+  "BILL_AMT3": 25000,
+  "BILL_AMT4": 20000,
+  "BILL_AMT5": 15000,
+  "BILL_AMT6": 10000,
+  "PAY_AMT1": 20000,
+  "PAY_AMT2": 25000,
+  "PAY_AMT3": 18000,
+  "PAY_AMT4": 15000,
+  "PAY_AMT5": 12000,
+  "PAY_AMT6": 10000
+}
+
+--------------------------------------
+HIGH RISK CUSTOMER - MODEL TEST
+--------------------------------------
+
+{
+  "LIMIT_BAL": 20000,
+  "SEX": 1,
+  "EDUCATION": 3,
+  "MARRIAGE": 2,
+  "AGE": 40,
+  "PAY_0": 3,
+  "PAY_2": 2,
+  "PAY_3": 1,
+  "PAY_4": 2,
+  "PAY_5": 3,
+  "PAY_6": 2,
+  "BILL_AMT1": 50000,
+  "BILL_AMT2": 55000,
+  "BILL_AMT3": 52000,
+  "BILL_AMT4": 50000,
+  "BILL_AMT5": 48000,
+  "BILL_AMT6": 45000,
+  "PAY_AMT1": 5000,
+  "PAY_AMT2": 4000,
+  "PAY_AMT3": 2000,
+  "PAY_AMT4": 1000,
+  "PAY_AMT5": 0,
+  "PAY_AMT6": 0
+}

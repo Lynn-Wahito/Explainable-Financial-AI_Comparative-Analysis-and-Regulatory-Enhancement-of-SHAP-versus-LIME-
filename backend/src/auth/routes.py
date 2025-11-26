@@ -16,17 +16,25 @@ from .utils import (
     create_access_token,
     generate_reset_token,
     generate_verification_token,
-    get_current_user,   
+    get_current_user,
 )
 
 # -------------------------------------------------------------------
 # Config / helpers
 # -------------------------------------------------------------------
-SEED_BYPASS = {
+_DEFAULT_SEED_BYPASS = {
+    "admin@example.com",
+    "customer@example.com",
+    "regulator@example.com",
+    "analyst@example.com",
+}
+_env_extra = {
     e.strip().lower()
     for e in os.getenv("AUTH_SEED_BYPASS_EMAILS", "").split(",")
     if e.strip()
 }
+SEED_BYPASS = {e.lower() for e in _DEFAULT_SEED_BYPASS} | _env_extra
+
 
 def mask_email(email: str) -> str:
     name, domain = email.split("@", 1)
@@ -36,11 +44,14 @@ def mask_email(email: str) -> str:
         masked = name[0] + "***" + name[-1]
     return f"{masked}@{domain}"
 
+
 def get_otpauth_uri(secret: str, email: str, issuer: str = "CreditAI") -> str:
     return pyotp.TOTP(secret).provisioning_uri(name=email, issuer_name=issuer)
 
+
 def generate_totp_secret() -> str:
     return pyotp.random_base32()
+
 
 # Real email service if configured; otherwise simulate in console
 try:
@@ -48,6 +59,7 @@ try:
 except Exception:
     def send_email(to_email: str, subject: str, html_body: str):
         print(f"[SIMULATED EMAIL to {to_email}] {subject}\n{html_body}\n")
+
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -65,7 +77,6 @@ def get_db():
 # Schemas
 # -------------------------------------------------------------------
 class RegisterIn(BaseModel):
-    # accept both "full_name" and "fullName"
     full_name: Optional[str] = Field(
         default=None,
         validation_alias=AliasChoices("full_name", "fullName"),
@@ -74,7 +85,6 @@ class RegisterIn(BaseModel):
     email: EmailStr
     password: str
     confirm_password: str
-
     model_config = ConfigDict(populate_by_name=True)
 
     @model_validator(mode="after")
@@ -91,7 +101,6 @@ class LoginIn(BaseModel):
     password: str
 
 class LoginOut(BaseModel):
-    # Handles both seed-bypass (token) and TOTP prompt
     twofa_required: bool
     ticket: Optional[str] = None
     masked_email: Optional[str] = None
@@ -115,7 +124,6 @@ class ProvisionOut(BaseModel):
     totp_secret: str
     otpauth_uri: str
 
-# ---- Password reset schemas
 class RequestResetIn(BaseModel):
     email: EmailStr
 
@@ -123,17 +131,36 @@ class ResetPasswordIn(BaseModel):
     token: str
     new_password: str
 
-# Optional: change password (authenticated)
 class ChangePasswordIn(BaseModel):
     current_password: str
     new_password: str
 
+class MeOut(BaseModel):
+    id: int
+    email: EmailStr
+    full_name: Optional[str] = None
+    role: Optional[str] = None
+    created_at: Optional[datetime] = None
+    is_active: Optional[bool] = None
+    is_verified: Optional[bool] = None
+
+# -------------------------------------------------------------------
+# Internal helpers
+# -------------------------------------------------------------------
+def _mint_access_token(user: User) -> str:
+    """
+    Mint JWT with sub=str(user.id) so utils.get_current_user() resolves correctly.
+    """
+    role_value = user.role.value if hasattr(user.role, "value") else user.role
+    return create_access_token(
+        subject=str(user.id),
+        data={"role": role_value, "email": user.email},
+    )
+
 # -------------------------------------------------------------------
 # Endpoints
 # -------------------------------------------------------------------
-
 def build_signup_pending_email(display_name: str, login_url: str) -> str:
-    """Return a clean HTML email for 'pending admin approval'."""
     return f"""<!doctype html>
 <html>
   <body style="margin:0;padding:0;background:#f6f7fb;font-family:Segoe UI, Roboto, Arial, sans-serif;color:#0f172a;">
@@ -146,7 +173,6 @@ def build_signup_pending_email(display_name: str, login_url: str) -> str:
                 <div style="font-weight:800;font-size:18px;letter-spacing:.2px;">CreditAI</div>
               </td>
             </tr>
-
             <tr>
               <td style="padding:28px;">
                 <h1 style="margin:0 0 8px 0;font-size:20px;color:#0f172a;">Welcome to CreditAI, {display_name} 👋</h1>
@@ -154,14 +180,12 @@ def build_signup_pending_email(display_name: str, login_url: str) -> str:
                   Your account has been created and is currently <b>pending administrator approval</b>.
                   You’ll receive another email as soon as your access is activated.
                 </p>
-
                 <div style="margin:18px 0 8px 0;font-weight:700;color:#0f172a;">What happens next?</div>
                 <ol style="margin:8px 0 16px 18px;padding:0;color:#334155;font-size:14px;line-height:1.6;">
                   <li>Admin reviews and approves your account.</li>
-                  <li>You’ll then be able to sign in and complete <b>Two-Factor Authentication (2FA)</b>.</li>
+                  <li>You'll then sign in and complete <b>Two-Factor Authentication (2FA)</b>.</li>
                   <li>Access your dashboard and start using CreditAI.</li>
                 </ol>
-
                 <table role="presentation" cellspacing="0" cellpadding="0" style="margin:20px 0 6px 0;">
                   <tr>
                     <td>
@@ -173,14 +197,12 @@ def build_signup_pending_email(display_name: str, login_url: str) -> str:
                     </td>
                   </tr>
                 </table>
-
                 <p style="margin:16px 0 0 0;font-size:12px;color:#64748b;">
                   If the button doesn’t work, copy and paste this link into your browser:<br>
                   <span style="color:#334155;">{login_url}</span>
                 </p>
               </td>
             </tr>
-
             <tr>
               <td style="padding:16px 28px;background:#f8fafc;border-top:1px solid #e5e7eb;color:#64748b;font-size:12px;">
                 Need help? Reply to this email or contact support.
@@ -196,12 +218,6 @@ def build_signup_pending_email(display_name: str, login_url: str) -> str:
 
 @router.post("/register", response_model=RegisterOut)
 def register(payload: RegisterIn, db: Session = Depends(get_db)):
-    """
-    Create account in PENDING state:
-      - role = CUSTOMER (temporary)
-      - is_active = False
-    Admin must later approve/assign role.
-    """
     if db.query(User).filter(User.email == payload.email).first():
         raise HTTPException(status_code=400, detail="Email already registered")
 
@@ -209,15 +225,14 @@ def register(payload: RegisterIn, db: Session = Depends(get_db)):
         full_name=payload.full_name,
         email=payload.email,
         hashed_password=hash_password(payload.password),
-        role=RoleEnum.CUSTOMER,   # NOT NULL column; safe default
-        is_active=False,          # not active until admin approval
-        is_verified=False,        # optional email verification
+        role=RoleEnum.CUSTOMER,
+        is_active=False,
+        is_verified=False,
     )
     db.add(user)
     db.commit()
     db.refresh(user)
 
-    # Notify User via email on pending approval
     try:
         display_name = (user.full_name or user.email.split("@")[0]).strip().title()
         login_url = f"http://localhost:5173/login?email={user.email}"
@@ -228,17 +243,8 @@ def register(payload: RegisterIn, db: Session = Depends(get_db)):
 
     return {"message": "Account created. Pending admin approval."}
 
-@router.post(
-    "/login",
-    response_model=LoginOut,
-    responses={403: {"description": "Account pending approval"}},
-)
+@router.post("/login", response_model=LoginOut, responses={403: {"description": "Account pending approval"}})
 def login(payload: LoginIn, db: Session = Depends(get_db)):
-    """
-    Step A: Verify credentials only.
-    If approved & active -> ask for TOTP (6 digits from authenticator app).
-    No email/SMS code is sent and no JWT is returned here (unless seed bypass).
-    """
     user = db.query(User).filter(User.email == payload.email).first()
     if not user or not verify_password(payload.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
@@ -246,13 +252,9 @@ def login(payload: LoginIn, db: Session = Depends(get_db)):
     if user.role is None or not user.is_active:
         raise HTTPException(status_code=403, detail="Account pending admin approval")
 
-    # Optional: seed bypass (dev)
+    # Seed bypass → return token immediately (no 2FA)
     if user.email.lower() in SEED_BYPASS:
-        token = create_access_token(
-            subject=str(user.id),
-            data={"role": (user.role.value if hasattr(user.role, "value") else user.role),
-                  "email": user.email},
-        )
+        token = _mint_access_token(user)
         return {
             "twofa_required": False,
             "ticket": "",
@@ -262,21 +264,16 @@ def login(payload: LoginIn, db: Session = Depends(get_db)):
             "token_type": "bearer",
         }
 
-    # Normal TOTP flow
+    # Everyone else → require TOTP
     return {
         "twofa_required": True,
-        "ticket": None,  # not used for TOTP
+        "ticket": None,
         "masked_email": mask_email(user.email),
         "message": "Enter the 6-digit code from your Authenticator app",
     }
 
 @router.post("/2fa/provision", response_model=ProvisionOut)
 def provision_2fa(payload: ProvisionIn, db: Session = Depends(get_db)):
-    """
-    Generate (or return existing) TOTP secret for a user and return an otpauth:// URI.
-    Frontend will show this as a QR for Google Authenticator / Authy / Microsoft Authenticator.
-    (In production, protect this route to the logged-in user only.)
-    """
     user = db.query(User).filter(User.email == payload.email).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -292,20 +289,13 @@ def provision_2fa(payload: ProvisionIn, db: Session = Depends(get_db)):
     uri = get_otpauth_uri(user.totp_secret, user.email, issuer="CreditAI")
     return {"email": user.email, "totp_secret": user.totp_secret, "otpauth_uri": uri}
 
-# ---------------- Password Reset (fixed: DateTime expiries) ----------------
-
 @router.post("/request-reset")
 def request_reset(payload: RequestResetIn, db: Session = Depends(get_db)):
-    """
-    Generate a reset token + DateTime expiry, email the reset URL.
-    Response is identical whether or not the email exists (no enumeration).
-    """
     user = db.query(User).filter(User.email == payload.email).first()
-
     if user:
         token = generate_reset_token()
         user.reset_token = token
-        user.reset_token_expires = datetime.utcnow() + timedelta(minutes=20)  # DateTime (correct type)
+        user.reset_token_expires = datetime.utcnow() + timedelta(minutes=20)
         db.add(user)
         db.commit()
 
@@ -320,17 +310,12 @@ def request_reset(payload: RequestResetIn, db: Session = Depends(get_db)):
                 ),
             )
         except Exception:
-            # non-fatal for API
             pass
 
-    # Always the same response
     return {"msg": "If that email exists, a reset link was sent."}
 
 @router.post("/reset-password")
 def reset_password(payload: ResetPasswordIn, db: Session = Depends(get_db)):
-    """
-    Validate token + expiry, set new password, clear token fields.
-    """
     user = db.query(User).filter(User.reset_token == payload.token).first()
     if not user or not user.reset_token_expires or datetime.utcnow() > user.reset_token_expires:
         raise HTTPException(status_code=400, detail="Invalid or expired token")
@@ -341,8 +326,6 @@ def reset_password(payload: ResetPasswordIn, db: Session = Depends(get_db)):
     db.add(user)
     db.commit()
     return {"msg": "Password reset successful"}
-
-# ---------------- Email Verification (optional) ----------------
 
 class RequestVerifyIn(BaseModel):
     email: EmailStr
@@ -391,29 +374,28 @@ def verify_email(payload: VerifyEmailIn, db: Session = Depends(get_db)):
 @router.post("/2fa/verify", response_model=TokenOut)
 def twofa_verify(payload: TwoFAVerifyIn, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == payload.email).first()
-    if not user or not user.totp_secret:
-        raise HTTPException(status_code=400, detail="2FA not provisioned")
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if not user.totp_secret:
+        raise HTTPException(status_code=400, detail="2FA not provisioned for this account")
 
     totp = pyotp.TOTP(user.totp_secret)
-    if not totp.verify(payload.code, valid_window=1):  # allow +/- 30s drift
-        raise HTTPException(status_code=400, detail="Invalid or expired code")
+    if not totp.verify(payload.code, valid_window=1):
+        raise HTTPException(status_code=400, detail="Invalid or expired verification code")
 
-    token = create_access_token(
-        subject=str(user.id),
-        data={"role": (user.role.value if hasattr(user.role, "value") else user.role),
-              "email": user.email},
-    )
+    token = _mint_access_token(user)
+
+    if not user.is_verified:
+        user.is_verified = True
+        db.add(user)
+        db.commit()
+
     return {"access_token": token, "token_type": "bearer"}
-
-# ---------------- Optional: Change Password (authenticated) ----------------
 
 @router.post("/change-password")
 def change_password(payload: ChangePasswordIn,
                     current_user: User = Depends(get_current_user),
                     db: Session = Depends(get_db)):
-    """
-    Authenticated users can change their password by providing the current one.
-    """
     if not verify_password(payload.current_password, current_user.hashed_password):
         raise HTTPException(status_code=400, detail="Current password is incorrect")
 
@@ -421,3 +403,17 @@ def change_password(payload: ChangePasswordIn,
     db.add(current_user)
     db.commit()
     return {"msg": "Password changed successfully"}
+
+# -------------------- NEW: who-am-I endpoint --------------------
+@router.get("/me", response_model=MeOut)
+def me(current_user: User = Depends(get_current_user)):
+    role_value = current_user.role.value if hasattr(current_user.role, "value") else current_user.role
+    return MeOut(
+        id=current_user.id,
+        email=current_user.email,
+        full_name=current_user.full_name,
+        role=role_value,
+        created_at=getattr(current_user, "created_at", None),
+        is_active=getattr(current_user, "is_active", None),
+        is_verified=getattr(current_user, "is_verified", None),
+    )

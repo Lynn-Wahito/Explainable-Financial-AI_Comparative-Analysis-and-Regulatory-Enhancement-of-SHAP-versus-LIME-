@@ -54,12 +54,17 @@ export default function TwoFactor() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.detail || "Invalid or expired code");
 
-      // save token
-      localStorage.setItem("access_token", json.access_token);
+      // ✅ save token for API calls
+      localStorage.setItem("token", json.access_token);          // new canonical key
+      localStorage.setItem("access_token", json.access_token);   // backward compatibility
 
       // decode role + email for routing
       const payload = decodeJwt(json.access_token) || {};
-      const role = (payload?.role || payload?.data?.role || payload?.claims?.role || "").toLowerCase();
+      const role =
+        (payload?.role ||
+          payload?.data?.role ||
+          payload?.claims?.role ||
+          "").toLowerCase();
       const userEmail = payload?.email || payload?.data?.email || email;
 
       if (role) localStorage.setItem("role", role);
@@ -103,7 +108,7 @@ export default function TwoFactor() {
             />
           </div>
 
-        <button
+          <button
             className="btn btn-primary"
             type="submit"
             disabled={loading || code.length !== 6}
