@@ -1,40 +1,51 @@
 // src/pages/regulator/RegulatorDashboard.jsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../../styles/regulator.css";
 
 export default function RegulatorDashboard() {
   const [theme, setTheme] = useState("dark"); // "dark" | "light"
   const [activeView, setActiveView] = useState("dashboard"); // "dashboard" | "audit" | "reports" | "fair" | "settings" | "model"
+  const navigate = useNavigate();
+
+  // --- auth helpers (adapt to your app’s keys) ---
+  const getToken = () => localStorage.getItem("access_token");
+  const getRole = () => localStorage.getItem("role"); // ensure you set this at login: "regulator"
+
+  // Guard: kick out if no token or wrong role
+  useEffect(() => {
+    const t = getToken();
+    const r = getRole();
+    if (!t || r !== "regulator") {
+      navigate("/login", { replace: true }); // <-- change route if needed
+    }
+  }, [navigate]);
+
+  // Logout: clear auth + navigate to login
+  const handleLogout = () => {
+    try {
+      // If your backend has an invalidate endpoint, call it here (optional).
+      // await fetch(`${API}/auth/logout`, { method: "POST", headers: { Authorization: `Bearer ${getToken()}` } });
+
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+      localStorage.removeItem("role");
+      // If you stash any user profile info, clear it too:
+      // localStorage.removeItem("user");
+
+      navigate("/login", { replace: true }); // <-- change to your actual login route
+    } catch (e) {
+      // Even if an API logout fails, force local logout:
+      localStorage.clear();
+      navigate("/login", { replace: true });
+    }
+  };
 
   // Mock data for Audit Trail table
   const auditRows = [
-    {
-      timestamp: "2024-09-21 14:23",
-      id: "#LN-2024-003",
-      decision: "Under Review",
-      decisionType: "pending",
-      method: "SHAP",
-      score: "9.4/10",
-      officer: "Sarah Chen",
-    },
-    {
-      timestamp: "2024-09-21 14:15",
-      id: "#LN-2024-004",
-      decision: "Approved",
-      decisionType: "approved",
-      method: "LIME",
-      score: "8.8/10",
-      officer: "Michael Torres",
-    },
-    {
-      timestamp: "2024-09-21 14:08",
-      id: "#LN-2024-005",
-      decision: "Declined",
-      decisionType: "declined",
-      method: "SHAP + LIME",
-      score: "6.2/10",
-      officer: "Sarah Chen",
-    },
+    { timestamp: "2024-09-21 14:23", id: "#LN-2024-003", decision: "Under Review", decisionType: "pending", method: "SHAP", score: "9.4/10", officer: "Sarah Chen" },
+    { timestamp: "2024-09-21 14:15", id: "#LN-2024-004", decision: "Approved", decisionType: "approved", method: "LIME", score: "8.8/10", officer: "Michael Torres" },
+    { timestamp: "2024-09-21 14:08", id: "#LN-2024-005", decision: "Declined", decisionType: "declined", method: "SHAP + LIME", score: "6.2/10", officer: "Sarah Chen" },
   ];
 
   return (
@@ -47,6 +58,7 @@ export default function RegulatorDashboard() {
           <button
             className="theme-toggle"
             onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+            type="button"
           >
             {theme === "dark" ? "🌞 Light" : "🌙 Dark"}
           </button>
@@ -55,6 +67,9 @@ export default function RegulatorDashboard() {
             <span className="user-name">Dr. Amanda Rodriguez</span>
             <div className="avatar">AR</div>
           </div>
+
+          {/* Optional: top-right logout */}
+          {/* <button className="btn btn-secondary" onClick={handleLogout} type="button">Logout</button> */}
         </div>
       </div>
 
@@ -63,40 +78,50 @@ export default function RegulatorDashboard() {
         <button
           className={`sidebar-item ${activeView === "dashboard" ? "active" : ""}`}
           onClick={() => setActiveView("dashboard")}
+          type="button"
         >
           📊 Compliance Dashboard
         </button>
         <button
           className={`sidebar-item ${activeView === "audit" ? "active" : ""}`}
           onClick={() => setActiveView("audit")}
+          type="button"
         >
           📋 Audit Trail
         </button>
         <button
           className={`sidebar-item ${activeView === "model" ? "active" : ""}`}
           onClick={() => setActiveView("model")}
+          type="button"
         >
           🔍 Model Validation
         </button>
         <button
           className={`sidebar-item ${activeView === "reports" ? "active" : ""}`}
           onClick={() => setActiveView("reports")}
+          type="button"
         >
           📈 Reports
         </button>
         <button
           className={`sidebar-item ${activeView === "fair" ? "active" : ""}`}
           onClick={() => setActiveView("fair")}
+          type="button"
         >
           ⚖️ Fair Lending
         </button>
         <button
           className={`sidebar-item ${activeView === "settings" ? "active" : ""}`}
           onClick={() => setActiveView("settings")}
+          type="button"
         >
           ⚙️ Settings
         </button>
-        <button className="sidebar-item">🚪 Logout</button>
+
+        {/* ✅ Real logout */}
+        <button className="sidebar-item" onClick={handleLogout} type="button">
+          🚪 Logout
+        </button>
       </aside>
 
       {/* MAIN */}
@@ -133,7 +158,7 @@ export default function RegulatorDashboard() {
             <div className="card">
               <div className="card-header">
                 <h3 className="card-title">Compliance Status</h3>
-                <button className="btn btn-primary">Generate Report</button>
+                <button className="btn btn-primary" type="button">Generate Report</button>
               </div>
 
               <div className="split-2">
@@ -194,7 +219,7 @@ export default function RegulatorDashboard() {
             <div className="card">
               <div className="card-header">
                 <h3 className="card-title">Recent Audit Trail</h3>
-                <button className="btn btn-secondary">Export Full Log</button>
+                <button className="btn btn-secondary" type="button">Export Full Log</button>
               </div>
 
               <table className="data-table">
@@ -237,7 +262,7 @@ export default function RegulatorDashboard() {
           </div>
         )}
 
-        {/* REPORTS / FAIR LENDING / MODEL / SETTINGS (simple placeholders for now) */}
+        {/* REPORTS / FAIR LENDING / MODEL / SETTINGS */}
         {activeView === "reports" && (
           <div className="content">
             <div className="page-header">
