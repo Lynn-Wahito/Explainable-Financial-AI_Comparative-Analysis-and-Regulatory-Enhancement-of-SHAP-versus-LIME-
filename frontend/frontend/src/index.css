@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  font-family: "Poppins", sans-serif;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: #0d1b2a;
+  color: white;
+}
+
+.dashboard-header a {
+  color: #ffd700;
+  margin-left: 1rem;
+  text-decoration: none;
+}
+
+.dashboard-header a.highlight {
+  background: #ffd700;
+  color: #0d1b2a;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+}
+
+.dashboard-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: #f4f6f8;
+  padding: 4rem 2rem;
+}
+
+.hero h2 {
+  font-size: 2.2rem;
+  color: #0d1b2a;
+}
+
+.hero p {
+  color: #555;
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+}
+
+.cta-btn {
+  background: #ffd700;
+  color: #0d1b2a;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.dashboard-footer {
+  background: #0d1b2a;
+  color: white;
+  text-align: center;
+  padding: 1rem;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(60px); /* move up more */
+    filter: blur(4px);           /* soft blur for smooth entry */
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 2.5s ease-out both; /* slower and smoother */
+}
+
+body {
+  font-family: 'Poppins', sans-serif;  /* You can pick any Google Font */
+  background-color: #001f3f;           /* Deep navy blue background */
+  color: white;                        /* Makes all text white by default */
+}
+
+h1 {
+  font-size: 60px;  
+  font-weight: 800;
+  color: white;
+}
+
+p {
+  font-size: 25px;  
+  color: #f0f0f0;      /* softer white for readability */
+}

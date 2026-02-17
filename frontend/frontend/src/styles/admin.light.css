@@ -1,0 +1,21 @@
+/* Light Theme Override (Admin only) */
+.admin-scope.theme-light {
+  --bg: #f3f6fb;
+  --panel: #f8fafc;
+  --panel-soft: #ffffff;
+  --text: #0f172a;
+  --muted: #475569;
+  --border: #e2e8f0;
+
+  --primary: #4f46e5;
+  --primary-600: #4338ca;
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --danger: #dc2626;
+
+  /* Ensure “CreditAI” is visible in light mode */
+  --logo: #0f172a;
+
+  --shadow: 0 10px 25px rgba(2,6,23,.08);
+  --radius: 14px;
+}
